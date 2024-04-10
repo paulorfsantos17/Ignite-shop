@@ -6,4 +6,5 @@ export const ContainerApp = styled('div', {
   alignItems: 'flex-start',
   minHeight: '100vh',
   justifyContent: 'center',
+  paddingBottom: '3rem',
 })
