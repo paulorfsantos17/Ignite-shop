@@ -1,12 +1,13 @@
-import { HomeContainer, Product } from '@/styles/pages/home'
-import { useKeenSlider } from 'keen-slider/react'
-
-import Image from 'next/image'
-
 import 'keen-slider/keen-slider.min.css'
-import { stripe } from '@/lib/stripe'
-import { GetServerSideProps } from 'next'
+
+import { useKeenSlider } from 'keen-slider/react'
+import { GetStaticProps } from 'next'
+import Image from 'next/image'
+import Link from 'next/link'
 import Stripe from 'stripe'
+
+import { stripe } from '@/lib/stripe'
+import { HomeContainer, Product } from '@/styles/pages/home'
 import { FormatterPrice } from '@/utils/formatter'
 
 interface IHomeProps {
@@ -15,7 +16,7 @@ interface IHomeProps {
     name: string
     imageUrl: string
     url: string
-    price: number
+    price: string
   }[]
 }
 
@@ -31,20 +32,22 @@ export default function Home({ products }: IHomeProps) {
     <HomeContainer ref={sliderRef} className="keen-slider">
       {products.map((product) => {
         return (
-          <Product className="keen-slider__slide" key={product.id}>
-            <Image src={product.imageUrl} width={500} height={460} alt="" />
-            <footer>
-              <strong>{product.name}</strong>
-              <span>{FormatterPrice.format(product.price / 100)}</span>
-            </footer>
-          </Product>
+          <Link key={product.id} href={`/product/${product.id}`} legacyBehavior>
+            <Product className="keen-slider__slide">
+              <Image src={product.imageUrl} width={500} height={460} alt="" />
+              <footer>
+                <strong>{product.name}</strong>
+                <span>{product.price}</span>
+              </footer>
+            </Product>
+          </Link>
         )
       })}
     </HomeContainer>
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const response = await stripe.products.list({
     expand: ['data.default_price'],
   })
@@ -56,12 +59,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
       name: product.name,
       imageUrl: product.images[0],
       url: product.url,
-      price: price.unit_amount,
+      price: FormatterPrice.format((price.unit_amount as number) / 100),
     }
   })
   return {
     props: {
       products,
     },
+    revalidate: 60 * 60 * 2,
   }
 }
