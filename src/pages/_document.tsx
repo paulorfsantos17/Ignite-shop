@@ -1,5 +1,6 @@
+import { Head, Html, Main, NextScript } from 'next/document'
+
 import { getCssText } from '@/styles'
-import { Html, Head, Main, NextScript } from 'next/document'
 
 // eslint-disable-next-line
 export default function Document() {
